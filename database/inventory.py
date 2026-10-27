@@ -1,57 +1,76 @@
-def sort_inventory(
+def get_inventory(
     videos: list[dict],
+    genre: str | None = None,
+    availability: str | None = None,
     sort_by: str = "title",
     descending: bool = False
 ) -> list[dict]:
-    """Return videos sorted by the selected field."""
-    if sort_by not in ["title", "genre", "year", "availability"]:
-        raise ValueError("Choose title, genre, year, or availability.")
+    
+    """Return video records filtered and sorted for the GUI.
+    Accepts a video list, optional genre and availability filters,
+    a sorting field, and a descending flag.
+    Returns an empty list if nothing matches.
+    Raises ValueError for invalid options or quantities. """
+    
+    fields = ["title", "genre", "year", "rating", "director", "availability"]
 
-    def get_sort_value(video):
-        if sort_by == "availability":
-            return video["available_quantity"] > 0
+    if sort_by not in fields:
+        raise ValueError("Invalid sorting field.")
 
-        if sort_by == "year":
-            return int(video.get("year") or 0)
+    genre = genre.strip().casefold() if genre else ""
+    availability = availability.strip().casefold() if availability else ""
 
-        return str(video.get(sort_by) or "").casefold()
-
-    return sorted(videos, key=get_sort_value, reverse=descending)
-
-
-def filter_inventory(
-    videos: list[dict],
-    genre: str | None = None,
-    availability: str | None = None
-) -> list[dict]:
-    """Return videos matching the selected filters."""
-    if genre is not None:
-        genre = genre.strip().casefold() or None
-
-    if availability is not None:
-        availability = availability.strip().casefold() or None
-
-    if availability not in [None, "available", "rented"]:
+    if availability not in ["", "available", "rented"]:
         raise ValueError("Choose Available or Rented.")
 
     results = []
 
     for video in videos:
-        video_genre = str(video.get("genre") or "").strip().casefold()
-
-        if genre is not None and video_genre != genre:
+        if genre and str(video.get("genre") or "").casefold() != genre:
             continue
 
-        if availability is not None:
-            available = video["available_quantity"]
-
-            if availability == "available" and available <= 0:
+        if availability:
+            if get_availability(video).casefold() != availability:
                 continue
-
-            if availability == "rented":
-                if video["total_quantity"] <= 0 or available != 0:
-                    continue
 
         results.append(video)
 
-    return results
+    def sort_value(video):
+        
+        """Return the field value used to sort one video."""
+        
+        if sort_by == "availability":
+            return get_availability(video)
+
+        if sort_by in ["year", "rating"]:
+            return float(video[sort_by])
+
+        return str(video.get(sort_by) or "").casefold()
+
+    if sort_by in ["year", "rating"]:
+        filled = [v for v in results if v.get(sort_by) not in [None, ""]]
+        missing = [v for v in results if v.get(sort_by) in [None, ""]]
+        return sorted(filled, key=sort_value, reverse=descending) + missing
+
+    return sorted(results, key=sort_value, reverse=descending)
+
+
+def get_availability(video: dict) -> str:
+    
+    """Return Available, Rented, or No copies for a video. 
+    Requires integer total_quantity and available_quantity fields.
+    Raises ValueError for missing or inconsistent quantities. """
+    
+    total = video.get("total_quantity")
+    available = video.get("available_quantity")
+
+    if type(total) is not int or type(available) is not int:
+        raise ValueError("Video quantities must be integers.")
+
+    if not 0 <= available <= total:
+        raise ValueError("Available quantity must be between zero and total.")
+
+    if total == 0:
+        return "No copies"
+
+    return "Available" if available > 0 else "Rented"
