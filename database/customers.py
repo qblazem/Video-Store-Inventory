@@ -78,7 +78,7 @@ def update_customer(
     customer_id: int,
     updates: dict
 ) -> dict | None:
-    """Update a customer and return the updated record"""
+    """update a customer and return the updated record"""
 
     allowed_fields = {
         "first_name", "last_name", "address", "phone", "email"

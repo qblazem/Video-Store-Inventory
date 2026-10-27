@@ -8,6 +8,7 @@ def create_rental(
     video_id: int
 ) -> dict:
     # check if the video exists
+    #.single might potentially lead to problems
     video = supabase.table("Videos").select("*").eq("video_id", video_id).single().execute()
 
     if not video.data:
