@@ -16,3 +16,8 @@ try:
 
 except Exception as e:
     print("Database connection failed:", e)
+
+
+
+
+# Inventory Test
