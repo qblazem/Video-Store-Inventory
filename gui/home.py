@@ -7,13 +7,19 @@ def inv_page():
 def cust_page():
     customer_page.tkraise()
 
+def show_return_page():
+    return_page.tkraise()
+
 root = tk.Tk()
 root.title("Video Store Inventory")
 root.geometry("900x600")
 
-#Inventory Page
+#Pages
 inventory_page = tk.Frame(root)
+customer_page = tk.Frame(root)
+return_page = tk.Frame(root)
 
+#Inventory Page
 #Header Frame
 header = tk.Frame(inventory_page, height=50, bd=2, relief='solid')
 header.pack(fill='x')
@@ -24,7 +30,7 @@ name = tk.Label(header, text="Video Store")
 name.pack(side='left', padx=10)
 
 #Menu button top right
-menu = tk.Button(header, text='Placeholder')
+menu = tk.Button(header, text='Return', command=show_return_page)
 menu.pack(side='right', padx=10)
 
 #Main search
@@ -175,18 +181,16 @@ table.pack(fill="both", expand=True)
 
 
 #Customer Page
-customer_page = tk.Frame(root)
-
 cust_header = tk.Frame(customer_page, height=50, bd=2, relief='solid')
 cust_header.pack(fill='x')
 cust_header.propagate(False)
 
 #Name top left
-cust_name = tk.Label(cust_header, text="Changed")
+cust_name = tk.Label(cust_header, text="Video Store")
 cust_name.pack(side='left', padx=10)
 
 #Menu button top right
-cust_menu = tk.Button(cust_header, text='Placeholder')
+cust_menu = tk.Button(cust_header, text='Return', command=show_return_page)
 cust_menu.pack(side='right', padx=10)
 
 #Main search
@@ -305,17 +309,46 @@ for col in col:
     cust_table.heading(col, text=col)
 cust_table.pack(fill="both", expand=True)
 
-inventory_page.place(x=0, y=0, relwidth=1, relheight=1)
-customer_page.place(x=0, y=0, relwidth=1, relheight=1)
-
 inventory_page.tkraise()
 
-
-
-
-
-
 #Return Page
+return_page_main = tk.Frame(return_page, bg='grey')
+return_page_main.pack(fill='both', expand=True)
+return_page_main.propagate(False)
 
+#Return top frame
+return_top = tk.Frame(return_page_main, height=50, bg='grey')
+return_top.pack(fill='x')
+return_page_main.propagate(False)
+
+home_button = tk.Button(return_top, text = 'Home', command=inv_page)
+home_button.pack(fill='x', side='left', padx=5, pady=5)
+
+
+
+#Search Row
+search_row = tk.Frame(return_page_main, height=50, bg='grey')
+search_row.pack(fill='x')
+
+#Return ID Insert
+#Return Label
+return_label = tk.Label(search_row, text='Movie ID:', bg='grey')
+return_label.pack(side='left', padx=5, pady=5)
+
+#Return Search
+return_search = tk.Entry(search_row,  width=100, bg='white')
+return_search.pack(side='left')
+
+#Submit Button
+submit_but= tk.Button(search_row, text='Return')
+submit_but.pack(side='left', padx=5, pady=5)
+
+
+
+
+#Place all the pages
+inventory_page.place(x=0, y=0, relwidth=1, relheight=1)
+customer_page.place(x=0, y=0, relwidth=1, relheight=1)
+return_page.place(x=0, y=0, relwidth=1, relheight=1)
 
 root.mainloop()
