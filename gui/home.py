@@ -1,6 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 
+from gui.customer_history import CustomerHistoryFrame
+from gui.rental import RentalFrame
+
+
 def inv_page():
     inventory_page.tkraise()
 
@@ -10,14 +14,25 @@ def cust_page():
 def show_return_page():
     return_page.tkraise()
 
+def show_customer_hist():
+    customer_hist.tkraise()
+
+def show_rental_page():
+    rental_page.tkraise()
+
 root = tk.Tk()
 root.title("Video Store Inventory")
 root.geometry("900x600")
 
+contain = tk.Frame(root)
+contain.pack(fill='both', expand=True)
+
 #Pages
-inventory_page = tk.Frame(root)
-customer_page = tk.Frame(root)
-return_page = tk.Frame(root)
+inventory_page = tk.Frame(contain)
+customer_page = tk.Frame(contain)
+return_page = tk.Frame(contain)
+customer_hist = CustomerHistoryFrame(contain)
+rental_page = RentalFrame(contain)
 
 #Inventory Page
 #Header Frame
@@ -29,9 +44,17 @@ header.propagate(False)
 name = tk.Label(header, text="Video Store")
 name.pack(side='left', padx=10)
 
-#Menu button top right
+#Return button top right
 menu = tk.Button(header, text='Return', command=show_return_page)
-menu.pack(side='right', padx=10)
+menu.pack(side='right', padx=(1,10))
+
+#Customer History Button
+customer_hist_but = tk.Button(header, text='Customer History', command=show_customer_hist)
+customer_hist_but.pack(side='right', padx=1)
+
+#Rental Button
+Rent = tk.Button(header, text='Rent', command=show_rental_page)
+Rent.pack(side='right', padx=1)
 
 #Main search
 main_search = tk.Entry(header, width=70,)
@@ -189,9 +212,17 @@ cust_header.propagate(False)
 cust_name = tk.Label(cust_header, text="Video Store")
 cust_name.pack(side='left', padx=10)
 
-#Menu button top right
+#Return button top right
 cust_menu = tk.Button(cust_header, text='Return', command=show_return_page)
 cust_menu.pack(side='right', padx=10)
+
+#Customer History Button
+customer_hist_but = tk.Button(cust_header, text='Customer History', command=show_customer_hist)
+customer_hist_but.pack(side='right', padx=1)
+
+#Rental Button
+Rent = tk.Button(cust_header, text='Rent', command=show_rental_page)
+Rent.pack(side='right', padx=1)
 
 #Main search
 cust_main_search = tk.Entry(cust_header, width=70,)
@@ -350,5 +381,7 @@ submit_but.pack(side='left', padx=5, pady=5)
 inventory_page.place(x=0, y=0, relwidth=1, relheight=1)
 customer_page.place(x=0, y=0, relwidth=1, relheight=1)
 return_page.place(x=0, y=0, relwidth=1, relheight=1)
+customer_hist.place(x=0, y=0, relwidth=1, relheight=1)
+rental_page.place(x=0, y=0, relwidth=1, relheight=1)
 
 root.mainloop()
