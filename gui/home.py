@@ -31,8 +31,8 @@ contain.pack(fill='both', expand=True)
 inventory_page = tk.Frame(contain)
 customer_page = tk.Frame(contain)
 return_page = tk.Frame(contain)
-customer_hist = CustomerHistoryFrame(contain)
-rental_page = RentalFrame(contain)
+customer_hist = CustomerHistoryFrame(contain,on_home=inv_page, on_rent=show_rental_page,on_history=show_customer_hist,on_return=show_return_page,)
+rental_page = RentalFrame(contain,on_home=inv_page,on_rent=show_rental_page,on_history=show_customer_hist,on_return=show_return_page,)
 
 #Inventory Page
 #Header Frame
@@ -384,4 +384,6 @@ return_page.place(x=0, y=0, relwidth=1, relheight=1)
 customer_hist.place(x=0, y=0, relwidth=1, relheight=1)
 rental_page.place(x=0, y=0, relwidth=1, relheight=1)
 
+
+inv_page()
 root.mainloop()

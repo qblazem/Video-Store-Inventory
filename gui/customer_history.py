@@ -8,8 +8,21 @@ class CustomerHistoryFrame(tk.Frame):
     PANEL = "#bfbfbf"
     TABLE = "#eeeeee"
 
-    def __init__(self, parent, show_header=True):
+    def __init__(
+        self,
+        parent,
+        show_header=True,
+        on_home=None,
+        on_rent=None,
+        on_history=None,
+        on_return=None,
+    ):
         super().__init__(parent, bg=self.BACKGROUND)
+
+        self.on_home = on_home
+        self.on_rent = on_rent
+        self.on_history = on_history
+        self.on_return = on_return
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(3, weight=1)
@@ -158,7 +171,6 @@ class CustomerHistoryFrame(tk.Frame):
         )
 
     def create_header(self):
-        # Same header height and arrangement as the home page
         header = tk.Frame(
             self,
             height=50,
@@ -173,34 +185,54 @@ class CustomerHistoryFrame(tk.Frame):
         )
         header.pack_propagate(False)
 
-        # Store name on the left
-        tk.Label(
+        # Click the store name to return home.
+        name = tk.Label(
             header,
             text="Video Store",
             bg=self.HEADER,
             fg="black",
-        ).pack(
-            side="left",
-            padx=10,
+            cursor="hand2",
         )
+        name.pack(side="left", padx=10)
 
-        # Placeholder button on the right
-        self.placeholder_button = tk.Button(
+        if self.on_home is not None:
+            name.bind(
+                "<Button-1>",
+                lambda event: self.on_home(),
+            )
+
+        # Navigation buttons on the right.
+        navigation = tk.Frame(
             header,
-            text="Placeholder",
+            bg=self.HEADER,
         )
-        self.placeholder_button.pack(
-            side="right",
-            padx=10,
-        )
+        navigation.pack(side="right", padx=10)
 
-        # Search bar in the middle
+        for text, callback in (
+            ("Rent", self.on_rent),
+            ("Customer History", self.on_history),
+            ("Return", self.on_return),
+        ):
+            tk.Button(
+                navigation,
+                text=text,
+                command=callback,
+                state=(
+                    "normal"
+                    if callback is not None
+                    else "disabled"
+                ),
+            ).pack(
+                side="left",
+                padx=1,
+            )
+
+        # Search bar between the title and navigation.
         self.header_search = tk.StringVar(master=self)
 
         self.main_search = tk.Entry(
             header,
             textvariable=self.header_search,
-            width=70,
             bg="white",
             fg="black",
             insertbackground="black",
@@ -209,7 +241,7 @@ class CustomerHistoryFrame(tk.Frame):
             side="left",
             fill="x",
             expand=True,
-            padx=20,
+            padx=10,
         )
 
     def configure_styles(self):
@@ -248,7 +280,10 @@ class CustomerHistoryFrame(tk.Frame):
         )
 
         for column_id, heading, width in columns:
-            table.heading(column_id, text=heading)
+            table.heading(
+                column_id,
+                text=heading,
+            )
             table.column(
                 column_id,
                 width=width,
@@ -257,7 +292,10 @@ class CustomerHistoryFrame(tk.Frame):
                 anchor="w",
             )
 
-        table.pack(fill="both", expand=True)
+        table.pack(
+            fill="both",
+            expand=True,
+        )
 
         table.tag_configure(
             "even",
@@ -282,6 +320,9 @@ if __name__ == "__main__":
         style.theme_use("clam")
 
     screen = CustomerHistoryFrame(root)
-    screen.pack(fill="both", expand=True)
+    screen.pack(
+        fill="both",
+        expand=True,
+    )
 
     root.mainloop()
