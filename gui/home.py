@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
+
 from gui.customer_history import CustomerHistoryFrame
 from gui.rental import RentalFrame
 
@@ -182,7 +183,9 @@ edit_but = tk.Button(table_section_but, text='Edit', height= 1, width=4)
 edit_but.pack(side='right' , padx=4, pady=4)
 
 #Add button
-add_but = tk.Button(table_section_but, text='Add', height= 1, width=4)
+def show_add():
+    entry_row.pack(fill='x', padx=5, pady=5)
+add_but = tk.Button(table_section_but, text='Add', height= 1, width=4, command=show_add)
 add_but.pack(side='left' , padx=4, pady=4)
 
 #Customer table
@@ -196,6 +199,39 @@ for col in col:
     table.heading(col, text=col)
 table.pack(fill="both", expand=True)
 
+#Add Insert
+entry_row = tk.Frame(table_frame)
+entry_row.pack_forget()
+
+#Entry boxes
+title_entry = tk.Entry(entry_row, bd=4)
+title_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+
+year_entry = tk.Entry(entry_row, bd=4)
+year_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+
+director_entry = tk.Entry(entry_row, bd=4)
+director_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+rating_entry = tk.Entry(entry_row, bd=4)
+rating_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+genre_entry = tk.Entry(entry_row, bd=4)
+genre_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+def add_save ():
+    # create_video(
+    # title_entry.get(),
+    # year_entry.get(),
+    # director_entry.get(),
+    # rating_entry.get(),
+    # genre_entry.get(),
+    # )
+    entry_row.pack_forget()
+add_submit = tk.Button(entry_row, bd=4, text='Save', command=add_save)
+add_submit.pack(side='left', padx=2, fill='x', expand=True)
 
 
 
@@ -214,7 +250,7 @@ cust_name.pack(side='left', padx=10)
 
 #Return button top right
 cust_menu = tk.Button(cust_header, text='Return', command=show_return_page)
-cust_menu.pack(side='right', padx=10)
+cust_menu.pack(side='right', padx=(1,10))
 
 #Customer History Button
 customer_hist_but = tk.Button(cust_header, text='Customer History', command=show_customer_hist)
@@ -326,7 +362,9 @@ cust_edit_but = tk.Button(cust_table_section_but, text='Edit', height= 1, width=
 cust_edit_but.pack(side='right' , padx=4, pady=4)
 
 #Add button
-cust_add_but = tk.Button(cust_table_section_but, text='Add', height= 1, width=4)
+def cust_show_add():
+    cust_entry_row.pack(fill='x', padx=5, pady=5)
+cust_add_but = tk.Button(cust_table_section_but, text='Add', height= 1, width=4, command=cust_show_add)
 cust_add_but.pack(side='left' , padx=4, pady=4)
 
 #Customer table
@@ -340,7 +378,40 @@ for col in col:
     cust_table.heading(col, text=col)
 cust_table.pack(fill="both", expand=True)
 
+#Add Insert
+cust_entry_row = tk.Frame(cust_table_frame)
+cust_entry_row.pack_forget()
+
+#Entry boxes
+first_entry = tk.Entry(cust_entry_row, bd=4)
+first_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+
+last_entry = tk.Entry(cust_entry_row, bd=4)
+last_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+
+address_entry = tk.Entry(cust_entry_row, bd=4)
+address_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+phone_entry = tk.Entry(cust_entry_row, bd=4)
+phone_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+email_entry = tk.Entry(cust_entry_row, bd=4)
+email_entry.pack(side='left', padx=2, fill='x', expand=True)
+
+def cust_add_save ():
+    cust_entry_row.pack_forget()
+cust_add_submit = tk.Button(cust_entry_row, bd=4, text='Save', command=cust_add_save)
+cust_add_submit.pack(side='left', padx=2, fill='x', expand=True)
+
 inventory_page.tkraise()
+
+
+
+
+
+
 
 #Return Page
 return_page_main = tk.Frame(return_page, bg='grey')
@@ -366,14 +437,13 @@ search_row.pack(fill='x')
 return_label = tk.Label(search_row, text='Movie ID:', bg='grey')
 return_label.pack(side='left', padx=5, pady=5)
 
-#Return Search
+#Return Entry
 return_search = tk.Entry(search_row,  width=100, bg='white')
 return_search.pack(side='left')
 
 #Submit Button
 submit_but= tk.Button(search_row, text='Return')
 submit_but.pack(side='left', padx=5, pady=5)
-
 
 
 
