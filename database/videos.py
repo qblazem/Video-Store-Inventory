@@ -2,31 +2,99 @@
 from database.database import supabase
 
 
+def _validate_video_fields(fields: dict) -> dict:
+    """Validate and format video fields before saving"""
+
+    fields = fields.copy()
+
+    if "title" in fields:
+        title = fields["title"]
+
+        if not isinstance(title, str) or not title.strip():
+            raise ValueError("Video title cannot be empty")
+
+        fields["title"] = title.strip()
+
+    if "year" in fields:
+        year = fields["year"]
+
+        if year is None or year == "":
+            fields["year"] = None
+        else:
+            try:
+                year = int(str(year).strip())
+            except ValueError:
+                raise ValueError("Year must be a valid integer")
+
+            if year < 1888 or year > 2100:
+                raise ValueError("Year must be between 1888 and 2100")
+
+            fields["year"] = year
+
+    if "rating" in fields:
+        rating = fields["rating"]
+
+        if rating is None or rating == "":
+            fields["rating"] = None
+        else:
+            try:
+                rating = float(rating)
+            except (ValueError, TypeError):
+                raise ValueError("Rating must be a number")
+
+            if not 0 <= rating <= 10:
+                raise ValueError("Rating must be between 0 and 10")
+
+            fields["rating"] = rating
+
+    if "total_quantity" in fields:
+        quantity = fields["total_quantity"]
+
+        try:
+            quantity = int(str(quantity).strip())
+        except (ValueError, TypeError):
+            raise ValueError("Total quantity must be a valid integer")
+
+        if quantity < 0:
+            raise ValueError("Total quantity cannot be negative")
+
+        fields["total_quantity"] = quantity
+
+    return fields
+
+
+def _active_rental_count(video_id: int) -> int:
+    """Count the active rentals for a video"""
+
+    response = (
+        supabase.table("Rentals")
+        .select("rental_id", count="exact", head=True)
+        .eq("video_id", video_id)
+        .eq("currently_rented", True)
+        .execute()
+    )
+
+    return response.count or 0
+
+
 def create_video(
     title: str,
-    year: str | None = None,
+    year: int | str | None = None,
     director: str | None = None,
     rating: float | None = None,
     genre: str | None = None,
     total_quantity: int = 0
-        #0 is a placeholder, needs to pull quantities from database probably
 ) -> dict:
     """Create a video and return the new record"""
 
-    if not title.strip():
-        raise ValueError("Video title cannot be empty")
-
-    if total_quantity < 0:
-        raise ValueError("Total quantity cannot be negative")
-
-    video = {
+    video = _validate_video_fields({
         "title": title,
         "year": year,
         "director": director,
         "rating": rating,
         "genre": genre,
         "total_quantity": total_quantity
-    }
+    })
 
     response = supabase.table("Videos").insert(video).execute()
 
@@ -34,7 +102,7 @@ def create_video(
 
 
 def get_video(video_id: int) -> dict | None:
-    """Get a video by ID, or none if not found"""
+    """Get a video by ID or none if not found"""
 
     response = (
         supabase.table("Videos")
@@ -47,7 +115,7 @@ def get_video(video_id: int) -> dict | None:
 
 
 def get_all_videos() -> list[dict]:
-    """Return all videos (up to the API row limit)"""
+    """Return all videos up to the API row limit"""
 
     response = (
         supabase.table("Videos")
@@ -92,13 +160,15 @@ def update_video(video_id: int, updates: dict) -> dict | None:
     if not updates or not set(updates).issubset(allowed_fields):
         raise ValueError("Invalid or empty video updates")
 
-    if "title" in updates:
-        if not isinstance(updates["title"], str) or not updates["title"].strip():
-            raise ValueError("Video title cannot be empty")
+    updates = _validate_video_fields(updates)
 
     if "total_quantity" in updates:
-        if updates["total_quantity"] is None or updates["total_quantity"] < 0:
-            raise ValueError("Total quantity cannot be negative")
+        rented = _active_rental_count(video_id)
+
+        if updates["total_quantity"] < rented:
+            raise ValueError(
+                "Total quantity cannot be less than active rentals"
+            )
 
     response = (
         supabase.table("Videos")
@@ -111,7 +181,7 @@ def update_video(video_id: int, updates: dict) -> dict | None:
 
 
 def delete_video(video_id: int) -> bool:
-    """Delete a video, return true if deleted"""
+    """Delete a video and return true if deleted"""
 
     response = (
         supabase.table("Videos")
@@ -120,11 +190,11 @@ def delete_video(video_id: int) -> bool:
         .execute()
     )
 
-    return len(response.data) > 0
+    return bool(response.data)
 
 
 def total_quantity(video_id: int) -> int | None:
-    """Return the total number of copies, or none if not found"""
+    """Return total copies or none if not found"""
 
     video = get_video(video_id)
 
@@ -134,23 +204,14 @@ def total_quantity(video_id: int) -> int | None:
     return video["total_quantity"]
 
 
-# Calculation
 def available_quantity(video_id: int) -> int:
-    """Calculate available copies after accounting for active rentals"""
+    """Calculate available copies after active rentals"""
 
     total = total_quantity(video_id)
 
     if total is None:
         raise ValueError("Video not found")
 
-    response = (
-        supabase.table("Rentals")
-        .select("rental_id", count="exact")
-        .eq("video_id", video_id)
-        .eq("currently_rented", True)
-        .execute()
-    )
-
-    rented = response.count or 0
+    rented = _active_rental_count(video_id)
 
     return max(0, total - rented)

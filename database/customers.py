@@ -1,3 +1,4 @@
+
 from database.database import supabase
 
 
@@ -8,21 +9,31 @@ def create_customer(
     phone: str | None = None,
     email: str | None = None
 ) -> dict:
+    """Create a customer and return the new record"""
+
+    if not first_name or not first_name.strip():
+        raise ValueError("Customer first name cannot be empty")
 
     customer = {
-        "first_name": first_name,
+        "first_name": first_name.strip(),
         "last_name": last_name,
         "address": address,
-        "phone": int(phone) if phone else None,
+        "phone": phone.strip() if phone else None,
         "email": email
     }
 
-    response = supabase.table("Customers").insert(customer).execute()
+    response = (
+        supabase.table("Customers")
+        .insert(customer)
+        .execute()
+    )
 
     return response.data[0]
 
 
 def get_customer(customer_id: int) -> dict | None:
+    """Retrieve a customer by ID"""
+
     response = (
         supabase.table("Customers")
         .select("*")
@@ -34,6 +45,7 @@ def get_customer(customer_id: int) -> dict | None:
 
 
 def get_all_customers() -> list[dict]:
+    """Retrieve all customers."""
 
     response = (
         supabase.table("Customers")
@@ -46,39 +58,30 @@ def get_all_customers() -> list[dict]:
 
 
 def search_customers(search_term: str) -> list[dict]:
+    """Search customers by first or last name"""
+
     if not search_term.strip():
         return []
 
     pattern = f"%{search_term.strip()}%"
 
-    first = (
+    response = (
         supabase.table("Customers")
         .select("*")
-        .ilike("first_name", pattern)
+        .or_(
+            f"first_name.ilike.{pattern},last_name.ilike.{pattern}"
+        )
         .execute()
     )
 
-    last = (
-        supabase.table("Customers")
-        .select("*")
-        .ilike("last_name", pattern)
-        .execute()
-    )
-
-    # combine results without duplicate customers
-    customers = {
-        customer["customer_id"]: customer
-        for customer in first.data + last.data
-    }
-
-    return list(customers.values())
+    return response.data
 
 
 def update_customer(
     customer_id: int,
     updates: dict
 ) -> dict | None:
-    """update a customer and return the updated record"""
+    """Update a customer and return the updated record"""
 
     allowed_fields = {
         "first_name", "last_name", "address", "phone", "email"
@@ -89,10 +92,17 @@ def update_customer(
 
     updates = updates.copy()
 
+    if "first_name" in updates:
+        first_name = updates["first_name"]
+
+        if not isinstance(first_name, str) or not first_name.strip():
+            raise ValueError("Customer first name cannot be empty")
+
+        updates["first_name"] = first_name.strip()
+
     if "phone" in updates:
-        updates["phone"] = (
-            int(updates["phone"]) if updates["phone"] else None
-        )
+        phone = updates["phone"]
+        updates["phone"] = phone.strip() if phone else None
 
     response = (
         supabase.table("Customers")
@@ -105,7 +115,7 @@ def update_customer(
 
 
 def delete_customer(customer_id: int) -> bool:
-    """Delete a customer, return True if deleted"""
+    """Delete a customer and return True if deleted"""
 
     response = (
         supabase.table("Customers")
@@ -114,4 +124,4 @@ def delete_customer(customer_id: int) -> bool:
         .execute()
     )
 
-    return len(response.data) > 0
+    return bool(response.data)
