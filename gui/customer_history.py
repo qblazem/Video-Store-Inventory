@@ -1,5 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+
+from database.customers import get_all_customers
+from database.videos import get_all_videos
+from database.rentals import get_customer_rentals
 
 
 class CustomerHistoryFrame(tk.Frame):
@@ -25,8 +29,8 @@ class CustomerHistoryFrame(tk.Frame):
         self.on_return = on_return
 
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
 
         self.customer_id = tk.StringVar(
             master=self,
@@ -56,13 +60,23 @@ class CustomerHistoryFrame(tk.Frame):
             pady=(20, 15),
         )
 
+        self._customers = {}
+        self._videos = {}
+        self.selected_customer = tk.StringVar(master=self)
+        picker_frame = tk.Frame(self, bg=self.BACKGROUND)
+        picker_frame.grid(row=2, column=0, sticky="e", padx=20)
+        self.customer_picker = ttk.Combobox(picker_frame, width=36, state="readonly")
+        self.customer_picker.pack(side="right")
+        tk.Label(picker_frame, text="Select customer:", bg=self.BACKGROUND).pack(side="right", padx=8)
+        self.customer_picker.bind("<<ComboboxSelected>>", self._customer_chosen)
+
         # Customer information
         customer_panel = tk.Frame(
             self,
             bg=self.PANEL,
         )
         customer_panel.grid(
-            row=2,
+            row=3,
             column=0,
             sticky="ew",
             padx=20,
@@ -101,7 +115,7 @@ class CustomerHistoryFrame(tk.Frame):
             pady=12,
         )
         current_panel.grid(
-            row=3,
+            row=4,
             column=0,
             sticky="nsew",
             padx=20,
@@ -132,7 +146,7 @@ class CustomerHistoryFrame(tk.Frame):
             pady=12,
         )
         history_panel.grid(
-            row=4,
+            row=5,
             column=0,
             sticky="nsew",
             padx=20,
@@ -163,12 +177,84 @@ class CustomerHistoryFrame(tk.Frame):
             wraplength=700,
             justify="left",
         ).grid(
-            row=5,
+            row=6,
             column=0,
             sticky="w",
             padx=20,
             pady=(0, 15),
         )
+
+    def _customer_chosen(self, event=None):
+        """Select the customer chosen in the dropdown"""
+        value = self.customer_picker.get().split(" - ", 1)[0]
+        self.selected_customer.set(value)
+        self.show_customer_history()
+
+    def refresh_data(self, selected_customer_id=None):
+        """Refresh history and optionally select a customer by ID"""
+        try:
+            customers = get_all_customers()
+            videos = {v["video_id"]: v for v in get_all_videos()}
+            self._customers = {c["customer_id"]: c for c in customers}
+            self._videos = videos
+            self.customer_picker["values"] = [
+                f"{c['customer_id']} - {c['first_name']} {c.get('last_name') or ''}".strip()
+                for c in customers
+            ]
+            if selected_customer_id is not None:
+                self.selected_customer.set(str(selected_customer_id))
+            elif self.selected_customer.get() not in [str(c['customer_id']) for c in customers]:
+                self.selected_customer.set("")
+            self.show_customer_history()
+            if self.selected_customer.get() and int(self.selected_customer.get()) in self._customers:
+                customer = self._customers[int(self.selected_customer.get())]
+                self.customer_picker.set(f"{customer['customer_id']} - {customer['first_name']} {customer.get('last_name') or ''}".strip())
+            else:
+                self.customer_picker.set("")
+        except Exception as exc:
+            self.status.set("Unable to load customer history")
+            messagebox.showerror("Database error", str(exc), parent=self)
+
+    def show_customer_history(self, event=None):
+        """Display current and previous rentals for the selected customer"""
+        self.current_table.delete(*self.current_table.get_children())
+        self.history_table.delete(*self.history_table.get_children())
+        raw_id = self.selected_customer.get()
+        if not raw_id:
+            self.customer_id.set("Customer ID: —")
+            self.customer_name.set("Name: —")
+            self.status.set("Select a customer to see rental history")
+            return
+        customer_id = int(raw_id)
+        customer = self._customers.get(customer_id)
+        if not customer:
+            return
+        self.customer_id.set(f"Customer ID: {customer_id}")
+        self.customer_name.set(f"Name: {customer['first_name']} {customer.get('last_name') or ''}")
+        try:
+            rentals = get_customer_rentals(customer_id)
+        except Exception as exc:
+            messagebox.showerror("Database error", str(exc), parent=self)
+            return
+        for r in rentals:
+            video = self._videos.get(r["video_id"], {})
+            vals = (
+                video.get("title", "Unknown"), video.get("year") or "",
+                video.get("director") or "", video.get("rating") if video.get("rating") is not None else "",
+                video.get("genre") or "", r["video_id"]
+            )
+            if r["currently_rented"]:
+                self.current_table.insert("", "end", iid=str(r["rental_id"]), values=vals)
+            else:
+                self.history_table.insert("", "end", iid=str(r["rental_id"]), values=vals + (
+                    self._format_date(r.get("rented_at")), self._format_date(r.get("returned_at"))
+                ))
+        self.status.set(f"{len(rentals)} rental(s) found")
+
+    @staticmethod
+    def _format_date(value):
+        """Display the date portion of a timestamp"""
+        return str(value)[:10] if value else ""
 
     def create_header(self):
         header = tk.Frame(

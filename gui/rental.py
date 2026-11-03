@@ -1,5 +1,9 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+
+from database.customers import get_all_customers
+from database.videos import get_all_videos, available_quantity
+from database.rentals import create_rental
 
 
 class RentalFrame(tk.Frame):
@@ -139,7 +143,7 @@ class RentalFrame(tk.Frame):
                 ("title", "Movie", 220),
                 ("video_id", "Movie ID", 100),
             ),
-            selectmode="extended",
+            selectmode="browse",
         )
 
         # Bottom section
@@ -176,10 +180,10 @@ class RentalFrame(tk.Frame):
             sticky="w",
         )
 
-        # Disabled until database rental logic is connected.
         self.rent_button = ttk.Button(
             bottom,
             text="Rent",
+            command=self.rent_selected,
             state="disabled",
         )
         self.rent_button.grid(
@@ -187,6 +191,65 @@ class RentalFrame(tk.Frame):
             column=1,
             padx=(15, 0),
         )
+        self.customer_table.bind("<<TreeviewSelect>>", self.update_selection)
+        self.movie_table.bind("<<TreeviewSelect>>", self.update_selection)
+        self.customer_search.trace_add("write", lambda *_: self.filter_tables())
+        self.movie_search.trace_add("write", lambda *_: self.filter_tables())
+        self.customers = []
+        self.movies = []
+
+    def refresh_data(self):
+        """Load customers and videos for the rental screen"""
+        try:
+            self.customers = get_all_customers()
+            self.movies = get_all_videos()
+            self.filter_tables()
+            self.status.set("Choose a customer and an available movie")
+        except Exception as exc:
+            self.status.set("Could not load rental information")
+            messagebox.showerror("Database error", str(exc), parent=self)
+
+    def filter_tables(self):
+        """Filter customer and movie lists locally"""
+        customer_query = self.customer_search.get().strip().lower()
+        movie_query = self.movie_search.get().strip().lower()
+        self.customer_table.delete(*self.customer_table.get_children())
+        self.movie_table.delete(*self.movie_table.get_children())
+        for person in self.customers:
+            name = f"{person.get('first_name') or ''} {person.get('last_name') or ''}".strip()
+            if customer_query in f"{name} {person['customer_id']}".lower():
+                self.customer_table.insert("", "end", iid=str(person["customer_id"]), values=(name, person["customer_id"]))
+        for movie in self.movies:
+            title = movie.get("title") or ""
+            if movie_query in f"{title} {movie['video_id']}".lower():
+                self.movie_table.insert("", "end", iid=str(movie["video_id"]), values=(title, movie["video_id"]))
+        self.update_selection()
+
+    def update_selection(self, event=None):
+        """Enable Rent after selecting a customer and movie"""
+        ready = bool(self.customer_table.selection() and self.movie_table.selection())
+        self.rent_button.configure(state="normal" if ready else "disabled")
+
+    def rent_selected(self):
+        """Create a rental for the selected customer and movie"""
+        if not self.customer_table.selection() or not self.movie_table.selection():
+            return
+        customer_id = int(self.customer_table.selection()[0])
+        video_id = int(self.movie_table.selection()[0])
+        try:
+            available = available_quantity(video_id)
+            if available <= 0:
+                raise ValueError("No copies available for rental")
+            rental = create_rental(customer_id, video_id)
+        except ValueError as exc:
+            messagebox.showerror("Cannot rent movie", str(exc), parent=self)
+            return
+        except Exception as exc:
+            messagebox.showerror("Database error", str(exc), parent=self)
+            return
+        self.status.set(f"Rental #{rental['rental_id']} created successfully")
+        messagebox.showinfo("Rental created", f"Rental ID: {rental['rental_id']}", parent=self)
+        self.refresh_data()
 
     def create_header(self):
         header = tk.Frame(

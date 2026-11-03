@@ -1,5 +1,14 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+
+from database.videos import (
+    create_video, get_all_videos, get_video, update_video, delete_video, search_video
+)
+from database.customers import (
+    create_customer, get_all_customers, get_customer, update_customer,
+    delete_customer, search_customers
+)
+from database.rentals import get_active_rentals, return_rental
 
 
 from gui.customer_history import CustomerHistoryFrame
@@ -7,18 +16,24 @@ from gui.rental import RentalFrame
 
 
 def inv_page():
+    refresh_inventory()
     inventory_page.tkraise()
 
 def cust_page():
+    refresh_customers()
     customer_page.tkraise()
 
 def show_return_page():
+    refresh_returns()
     return_page.tkraise()
 
 def show_customer_hist():
+    selected_id = int(cust_table.selection()[0]) if cust_table.selection() else None
+    customer_hist.refresh_data(selected_id)
     customer_hist.tkraise()
 
 def show_rental_page():
+    rental_page.refresh_data()
     rental_page.tkraise()
 
 root = tk.Tk()
@@ -178,15 +193,66 @@ table_section.pack(side='left', padx=0, fill='both', expand=True)
 table_section_but = tk.Frame(table_section, bg='grey')
 table_section_but.pack(side='top', fill='x')
 
-#Edit Button
-edit_but = tk.Button(table_section_but, text='Edit', height= 1, width=4)
-edit_but.pack(side='right' , padx=4, pady=4)
+# Add, edit and delete act on the selected database ID
+editing_video_id = None
 
-#Add button
 def show_add():
+    global editing_video_id
+    editing_video_id = None
+    clear_video_fields()
+    add_submit.config(text='Save')
     entry_row.pack(fill='x', padx=5, pady=5)
-add_but = tk.Button(table_section_but, text='Add', height= 1, width=4, command=show_add)
-add_but.pack(side='left' , padx=4, pady=4)
+
+def show_edit():
+    global editing_video_id
+    selection = table.selection()
+    if not selection:
+        messagebox.showwarning('Select a video', 'Select a video to edit first')
+        return
+    video_id = int(selection[0])
+    try:
+        video = get_video(video_id)
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not load video:\n{exc}')
+        return
+    if video is None:
+        messagebox.showwarning('Missing video', 'This video no longer exists')
+        refresh_inventory()
+        return
+    editing_video_id = video_id
+    for field, key in zip(video_fields, video_field_keys):
+        field.delete(0, tk.END)
+        value = video.get(key)
+        field.insert(0, '' if value is None else str(value))
+    add_submit.config(text='Update')
+    entry_row.pack(fill='x', padx=5, pady=5)
+
+def remove_video():
+    selection = table.selection()
+    if not selection:
+        messagebox.showwarning('Select a video', 'Select a video to delete first')
+        return
+    video_id = int(selection[0])
+    title = table.item(selection[0], 'values')[0]
+    if not messagebox.askyesno('Delete video', f'Delete "{title}"? This cannot be undone'):
+        return
+    try:
+        deleted = delete_video(video_id)
+    except Exception as exc:
+        messagebox.showerror('Delete failed',
+                             f'Could not delete video\nIt may have rental history\n\n{exc}')
+        return
+    if not deleted:
+        messagebox.showwarning('Missing video', 'Video was not found')
+    cancel_video_edit()
+    refresh_inventory()
+
+add_but = tk.Button(table_section_but, text='Add', height=1, width=6, command=show_add)
+add_but.pack(side='left', padx=4, pady=4)
+edit_but = tk.Button(table_section_but, text='Edit', height=1, width=6, command=show_edit)
+edit_but.pack(side='right', padx=4, pady=4)
+delete_but = tk.Button(table_section_but, text='Delete', height=1, width=7, command=remove_video)
+delete_but.pack(side='right', padx=4, pady=4)
 
 #Customer table
 #Frame of table
@@ -199,39 +265,116 @@ for col in col:
     table.heading(col, text=col)
 table.pack(fill="both", expand=True)
 
+
+def refresh_inventory():
+    """Load videos from Supabase into the inventory table"""
+    try:
+        term = main_search.get().strip()
+        videos = search_video(term) if term else get_all_videos()
+    except Exception as exc:
+        messagebox.showerror("Database error", f"Could not load inventory:\n{exc}")
+        return
+
+    table.delete(*table.get_children())
+    for video in videos:
+        table.insert(
+            "", "end", iid=str(video["video_id"]),
+            values=(
+                video.get("title") or "",
+                video.get("year") if video.get("year") is not None else "",
+                video.get("director") or "",
+                video.get("rating") if video.get("rating") is not None else "",
+                video.get("genre") or "",
+                video.get("total_quantity", 0)
+            )
+        )
+
+
 #Add Insert
 entry_row = tk.Frame(table_frame)
 entry_row.pack_forget()
 
-#Entry boxes
-title_entry = tk.Entry(entry_row, bd=4)
-title_entry.pack(side='left', padx=2, fill='x', expand=True)
+# Labeled inventory inputs
+
+def inventory_field(label, width=12):
+    field_frame = tk.Frame(entry_row)
+    field_frame.pack(side='left', padx=2, fill='x', expand=True)
+    tk.Label(field_frame, text=label, anchor='w').pack(fill='x')
+    entry = tk.Entry(field_frame, bd=2, width=width)
+    entry.pack(fill='x')
+    return entry
 
 
-year_entry = tk.Entry(entry_row, bd=4)
-year_entry.pack(side='left', padx=2, fill='x', expand=True)
+title_entry = inventory_field("Title")
+year_entry = inventory_field("Year", 6)
+director_entry = inventory_field("Director")
+rating_entry = inventory_field("Rating", 6)
+genre_entry = inventory_field("Genre")
+quantity_entry = inventory_field("Quantity", 6)
+video_fields = (title_entry, year_entry, director_entry, rating_entry, genre_entry, quantity_entry)
+video_field_keys = ('title', 'year', 'director', 'rating', 'genre', 'total_quantity')
 
+def clear_video_fields():
+    for field in video_fields:
+        field.delete(0, tk.END)
+    quantity_entry.insert(0, '0')
 
-director_entry = tk.Entry(entry_row, bd=4)
-director_entry.pack(side='left', padx=2, fill='x', expand=True)
-
-rating_entry = tk.Entry(entry_row, bd=4)
-rating_entry.pack(side='left', padx=2, fill='x', expand=True)
-
-genre_entry = tk.Entry(entry_row, bd=4)
-genre_entry.pack(side='left', padx=2, fill='x', expand=True)
-
-def add_save ():
-    # create_video(
-    # title_entry.get(),
-    # year_entry.get(),
-    # director_entry.get(),
-    # rating_entry.get(),
-    # genre_entry.get(),
-    # )
+def cancel_video_edit():
+    global editing_video_id
+    editing_video_id = None
     entry_row.pack_forget()
+    clear_video_fields()
+    add_submit.config(text='Save')
+
+quantity_entry.insert(0, "0")
+
+
+def add_save():
+    """Save a new or edited video and refresh inventory"""
+    payload = {
+        'title': title_entry.get(),
+        'year': year_entry.get().strip(),
+        'director': director_entry.get().strip(),
+        'rating': rating_entry.get().strip(),
+        'genre': genre_entry.get().strip(),
+        'total_quantity': quantity_entry.get().strip()
+    }
+    try:
+        if editing_video_id is None:
+            saved = create_video(**payload)
+        else:
+            saved = update_video(editing_video_id, payload)
+    except ValueError as exc:
+        messagebox.showerror('Invalid video', str(exc))
+        return
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not save video:\n{exc}')
+        return
+
+    if saved is None:
+        messagebox.showwarning('Missing video', 'This video no longer exists')
+        return
+    was_editing = editing_video_id is not None
+    cancel_video_edit()
+    refresh_inventory()
+    messagebox.showinfo('Video updated' if was_editing else 'Video added',
+                        f'Saved {saved["title"]}')
+
+
 add_submit = tk.Button(entry_row, bd=4, text='Save', command=add_save)
 add_submit.pack(side='left', padx=2, fill='x', expand=True)
+tk.Button(entry_row, text='Cancel', command=cancel_video_edit).pack(side='left', padx=2, pady=(18, 0))
+
+# Avoid querying the database on every keystroke
+inventory_search_job = None
+
+def schedule_inventory_search(_event=None):
+    global inventory_search_job
+    if inventory_search_job is not None:
+        root.after_cancel(inventory_search_job)
+    inventory_search_job = root.after(300, refresh_inventory)
+
+main_search.bind('<KeyRelease>', schedule_inventory_search)
 
 
 
@@ -357,15 +500,66 @@ cust_table_section.pack(side='left', padx=0, fill='both', expand=True)
 cust_table_section_but = tk.Frame(cust_table_section, bg='grey')
 cust_table_section_but.pack(side='top', fill='x')
 
-#Edit Button
-cust_edit_but = tk.Button(cust_table_section_but, text='Edit', height= 1, width=4)
-cust_edit_but.pack(side='right' , padx=4, pady=4)
+# Add, edit and delete customers by their database IDs
+editing_customer_id = None
 
-#Add button
 def cust_show_add():
+    global editing_customer_id
+    editing_customer_id = None
+    clear_customer_fields()
+    cust_add_submit.config(text='Save')
     cust_entry_row.pack(fill='x', padx=5, pady=5)
-cust_add_but = tk.Button(cust_table_section_but, text='Add', height= 1, width=4, command=cust_show_add)
-cust_add_but.pack(side='left' , padx=4, pady=4)
+
+def cust_show_edit():
+    global editing_customer_id
+    selection = cust_table.selection()
+    if not selection:
+        messagebox.showwarning('Select a customer', 'Select a customer to edit first')
+        return
+    customer_id = int(selection[0])
+    try:
+        customer = get_customer(customer_id)
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not load customer:\n{exc}')
+        return
+    if customer is None:
+        messagebox.showwarning('Missing customer', 'This customer no longer exists')
+        refresh_customers()
+        return
+    editing_customer_id = customer_id
+    for field, key in zip(customer_fields, customer_field_keys):
+        field.delete(0, tk.END)
+        field.insert(0, customer.get(key) or '')
+    cust_add_submit.config(text='Update')
+    cust_entry_row.pack(fill='x', padx=5, pady=5)
+
+def remove_customer():
+    selection = cust_table.selection()
+    if not selection:
+        messagebox.showwarning('Select a customer', 'Select a customer to delete first')
+        return
+    customer_id = int(selection[0])
+    values = cust_table.item(selection[0], 'values')
+    name = f'{values[0]} {values[1]}'.strip()
+    if not messagebox.askyesno('Delete customer', f'Delete {name}? This cannot be undone'):
+        return
+    try:
+        deleted = delete_customer(customer_id)
+    except Exception as exc:
+        messagebox.showerror('Delete failed',
+                             f'Could not delete customer\nThey may have rental history\n\n{exc}')
+        return
+    if not deleted:
+        messagebox.showwarning('Missing customer', 'Customer was not found')
+    cancel_customer_edit()
+    refresh_customers()
+
+cust_add_but = tk.Button(cust_table_section_but, text='Add', height=1, width=6, command=cust_show_add)
+cust_add_but.pack(side='left', padx=4, pady=4)
+cust_edit_but = tk.Button(cust_table_section_but, text='Edit', height=1, width=6, command=cust_show_edit)
+cust_edit_but.pack(side='right', padx=4, pady=4)
+cust_delete_but = tk.Button(cust_table_section_but, text='Delete', height=1, width=7, command=remove_customer)
+cust_delete_but.pack(side='right', padx=4, pady=4)
 
 #Customer table
 #Frame of table
@@ -382,28 +576,105 @@ cust_table.pack(fill="both", expand=True)
 cust_entry_row = tk.Frame(cust_table_frame)
 cust_entry_row.pack_forget()
 
-#Entry boxes
-first_entry = tk.Entry(cust_entry_row, bd=4)
-first_entry.pack(side='left', padx=2, fill='x', expand=True)
+# Customer table uses real database IDs so later edit/delete can target records
+def refresh_customers():
+    """Load customers from Supabase into the customer table"""
+    try:
+        term = cust_main_search.get().strip()
+        customers = search_customers(term) if term else get_all_customers()
+    except Exception as exc:
+        messagebox.showerror("Database error", f"Could not load customers:\n{exc}")
+        return
+
+    cust_table.delete(*cust_table.get_children())
+    for customer in customers:
+        cust_table.insert(
+            "", "end", iid=str(customer["customer_id"]),
+            values=(
+                customer.get("first_name") or "",
+                customer.get("last_name") or "",
+                customer.get("address") or "",
+                customer.get("phone") or "",
+                customer.get("email") or ""
+            )
+        )
 
 
-last_entry = tk.Entry(cust_entry_row, bd=4)
-last_entry.pack(side='left', padx=2, fill='x', expand=True)
+# Labeled customer inputs
+def customer_field(label):
+    field_frame = tk.Frame(cust_entry_row)
+    field_frame.pack(side='left', padx=2, fill='x', expand=True)
+    tk.Label(field_frame, text=label, anchor='w').pack(fill='x')
+    entry = tk.Entry(field_frame, bd=2, width=12)
+    entry.pack(fill='x')
+    return entry
 
 
-address_entry = tk.Entry(cust_entry_row, bd=4)
-address_entry.pack(side='left', padx=2, fill='x', expand=True)
+first_entry = customer_field("First name")
+last_entry = customer_field("Last name")
+address_entry = customer_field("Address")
+phone_entry = customer_field("Phone")
+email_entry = customer_field("Email")
+customer_fields = (first_entry, last_entry, address_entry, phone_entry, email_entry)
+customer_field_keys = ('first_name', 'last_name', 'address', 'phone', 'email')
 
-phone_entry = tk.Entry(cust_entry_row, bd=4)
-phone_entry.pack(side='left', padx=2, fill='x', expand=True)
+def clear_customer_fields():
+    for field in customer_fields:
+        field.delete(0, tk.END)
 
-email_entry = tk.Entry(cust_entry_row, bd=4)
-email_entry.pack(side='left', padx=2, fill='x', expand=True)
-
-def cust_add_save ():
+def cancel_customer_edit():
+    global editing_customer_id
+    editing_customer_id = None
+    clear_customer_fields()
     cust_entry_row.pack_forget()
+    cust_add_submit.config(text='Save')
+
+
+def cust_add_save():
+    """Save a new or edited customer and refresh the table"""
+    payload = {
+        'first_name': first_entry.get(),
+        'last_name': last_entry.get(),
+        'address': address_entry.get(),
+        'phone': phone_entry.get(),
+        'email': email_entry.get()
+    }
+    try:
+        if editing_customer_id is None:
+            saved = create_customer(**payload)
+        else:
+            saved = update_customer(editing_customer_id, payload)
+    except ValueError as exc:
+        messagebox.showerror('Invalid customer', str(exc))
+        return
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not save customer:\n{exc}')
+        return
+
+    if saved is None:
+        messagebox.showwarning('Missing customer', 'This customer no longer exists')
+        return
+    was_editing = editing_customer_id is not None
+    cancel_customer_edit()
+    refresh_customers()
+    messagebox.showinfo('Customer updated' if was_editing else 'Customer added',
+                        f'Saved {saved["first_name"]} {saved.get("last_name") or ""}')
+
+
 cust_add_submit = tk.Button(cust_entry_row, bd=4, text='Save', command=cust_add_save)
-cust_add_submit.pack(side='left', padx=2, fill='x', expand=True)
+cust_add_submit.pack(side='left', padx=2, pady=(18, 0))
+tk.Button(cust_entry_row, text='Cancel', command=cancel_customer_edit).pack(side='left', padx=2, pady=(18, 0))
+
+customer_search_job = None
+
+def schedule_customer_search(_event=None):
+    global customer_search_job
+    if customer_search_job is not None:
+        root.after_cancel(customer_search_job)
+    customer_search_job = root.after(300, refresh_customers)
+
+cust_main_search.bind('<KeyRelease>', schedule_customer_search)
+
 
 inventory_page.tkraise()
 
@@ -428,23 +699,60 @@ home_button.pack(fill='x', side='left', padx=5, pady=5)
 
 
 
-#Search Row
-search_row = tk.Frame(return_page_main, height=50, bg='grey')
-search_row.pack(fill='x')
+# Return active rentals using their rental ID
+return_controls = tk.Frame(return_page_main, bg='grey')
+return_controls.pack(fill='x', padx=10, pady=8)
+tk.Label(return_controls, text='Active rentals', bg='grey', font=('Arial', 14, 'bold')).pack(side='left')
 
-#Return ID Insert
-#Return Label
-return_label = tk.Label(search_row, text='Movie ID:', bg='grey')
-return_label.pack(side='left', padx=5, pady=5)
+return_columns = ('Rental ID', 'Customer', 'Movie', 'Rented At')
+return_table = ttk.Treeview(return_page_main, columns=return_columns, show='headings', selectmode='browse')
+for column in return_columns:
+    return_table.heading(column, text=column)
+return_table.pack(fill='both', expand=True, padx=10, pady=5)
 
-#Return Entry
-return_search = tk.Entry(search_row,  width=100, bg='white')
-return_search.pack(side='left')
 
-#Submit Button
-submit_but= tk.Button(search_row, text='Return')
-submit_but.pack(side='left', padx=5, pady=5)
+def refresh_returns():
+    """Load active rentals with customer and movie names"""
+    try:
+        rentals = get_active_rentals()
+        customers = {c['customer_id']: c for c in get_all_customers()}
+        videos = {v['video_id']: v for v in get_all_videos()}
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not load rentals:\n{exc}')
+        return
+    return_table.delete(*return_table.get_children())
+    for rental in rentals:
+        customer = customers.get(rental['customer_id'], {})
+        movie = videos.get(rental['video_id'], {})
+        customer_name = f"{customer.get('first_name', 'Unknown')} {customer.get('last_name') or ''}".strip()
+        return_table.insert('', 'end', iid=str(rental['rental_id']), values=(
+            rental['rental_id'], customer_name, movie.get('title', 'Unknown'),
+            str(rental.get('rented_at') or '')[:19]
+        ))
 
+
+def return_selected():
+    """Return the selected rental and refresh inventory"""
+    selection = return_table.selection()
+    if not selection:
+        messagebox.showwarning('Select a rental', 'Choose a rental from the table first')
+        return
+    rental_id = int(selection[0])
+    try:
+        result = return_rental(rental_id)
+    except Exception as exc:
+        messagebox.showerror('Database error', f'Could not return rental:\n{exc}')
+        return
+    if result is None:
+        messagebox.showwarning('Already returned', 'This rental is no longer active')
+    else:
+        messagebox.showinfo('Returned', f'Rental #{rental_id} was returned')
+    refresh_returns()
+    refresh_inventory()
+
+
+tk.Button(return_controls, text='Return selected rental', command=return_selected).pack(side='right', padx=5)
+tk.Button(return_controls, text='Refresh', command=refresh_returns).pack(side='right', padx=5)
 
 
 #Place all the pages
@@ -455,5 +763,15 @@ customer_hist.place(x=0, y=0, relwidth=1, relheight=1)
 rental_page.place(x=0, y=0, relwidth=1, relheight=1)
 
 
+refresh_inventory()
+refresh_customers()
 inv_page()
-root.mainloop()
+
+
+def run():
+    """Start the application window"""
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    run()

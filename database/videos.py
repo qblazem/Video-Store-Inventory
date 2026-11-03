@@ -1,4 +1,6 @@
 
+import math
+
 from database.database import supabase
 
 
@@ -7,57 +9,43 @@ def _validate_video_fields(fields: dict) -> dict:
 
     fields = fields.copy()
 
-    if "title" in fields:
-        title = fields["title"]
-
-        if not isinstance(title, str) or not title.strip():
-            raise ValueError("Video title cannot be empty")
-
-        fields["title"] = title.strip()
+    for key, label in {
+        "title": "Title", "director": "Director", "genre": "Genre"
+    }.items():
+        if key in fields:
+            value = fields[key]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{label} is required")
+            fields[key] = value.strip()
 
     if "year" in fields:
         year = fields["year"]
-
-        if year is None or year == "":
-            fields["year"] = None
-        else:
-            try:
-                year = int(str(year).strip())
-            except ValueError:
-                raise ValueError("Year must be a valid integer")
-
-            if year < 1888 or year > 2100:
-                raise ValueError("Year must be between 1888 and 2100")
-
-            fields["year"] = year
+        if isinstance(year, bool) or not str(year).strip().isdigit():
+            raise ValueError("Year must be a valid integer")
+        year = int(str(year).strip())
+        if not 1888 <= year <= 2100:
+            raise ValueError("Year must be between 1888 and 2100")
+        fields["year"] = year
 
     if "rating" in fields:
         rating = fields["rating"]
-
-        if rating is None or rating == "":
-            fields["rating"] = None
-        else:
-            try:
-                rating = float(rating)
-            except (ValueError, TypeError):
-                raise ValueError("Rating must be a number")
-
-            if not 0 <= rating <= 10:
-                raise ValueError("Rating must be between 0 and 10")
-
-            fields["rating"] = rating
+        if rating is None or isinstance(rating, bool) or str(rating).strip() == "":
+            raise ValueError("Rating is required")
+        try:
+            rating = float(rating)
+        except (ValueError, TypeError):
+            raise ValueError("Rating must be a number")
+        if not math.isfinite(rating) or not 0 <= rating <= 10:
+            raise ValueError("Rating must be between 0 and 10")
+        fields["rating"] = rating
 
     if "total_quantity" in fields:
         quantity = fields["total_quantity"]
-
-        try:
-            quantity = int(str(quantity).strip())
-        except (ValueError, TypeError):
+        if isinstance(quantity, bool) or not str(quantity).strip().isdigit():
             raise ValueError("Total quantity must be a valid integer")
-
+        quantity = int(str(quantity).strip())
         if quantity < 0:
             raise ValueError("Total quantity cannot be negative")
-
         fields["total_quantity"] = quantity
 
     return fields
