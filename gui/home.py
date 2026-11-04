@@ -88,26 +88,26 @@ tabs.propagate(False)
 def inv_show_sort():
     flt.pack_forget()
     sort.pack(side='left', before=table_section, padx=0, fill='y')
-    sort_but.config(bg='blue')
-    flt_but.config(bg='white')
-sort_but = tk.Button(tabs, text='Sort', width=14, bg='blue', command=inv_show_sort)
+    sort_but.config(bg='#2C5AA0')
+    flt_but.config(bg='#DDDDDD')
+sort_but = tk.Button(tabs, text='Sort', width=14, bg='#2C5AA0', command=inv_show_sort)
 sort_but.pack(side='left', padx=0, fill='both')
 
 #Filter button
 def inv_show_flt():
     sort.pack_forget()
     flt.pack(side='left', before=table_section, padx=0, fill='y')
-    flt_but.config(bg='blue')
-    sort_but.config(bg='white')
-flt_but = tk.Button(tabs, text='Filter', width=14, command=inv_show_flt)
+    flt_but.config(bg='#2C5AA0')
+    sort_but.config(bg='#DDDDDD')
+flt_but = tk.Button(tabs, text='Filter', width=14, bg='#DDDDDD', command=inv_show_flt)
 flt_but.pack(side='left', padx=0, fill='both')
 
 #Invintory Button
-inv_but = tk.Button(tabs, text='Inventory', bg='blue', command=inv_page)
+inv_but = tk.Button(tabs, text='Inventory', bg='#2C5AA0', command=inv_page)
 inv_but.pack(side='left', padx=0, fill='both',expand=True)
 
 #Customer button
-cust_but = tk.Button(tabs, text='Customer', command=cust_page)
+cust_but = tk.Button(tabs, text='Customer', bg='#DDDDDD', command=cust_page)
 cust_but.pack(side='left', padx=0, fill='both', expand=True)
 
 
@@ -120,34 +120,38 @@ main_box.propagate(False)
 
 #Sidebar (left)
 #Sort Section
-sort = tk.Frame(main_box, bd=2, relief='solid', width=215, bg='lightblue')
+sort = tk.Frame(main_box, bd=2, relief='solid', width=215, bg='#DDDDDD')
 sort.pack(side='left', padx=0, fill='y')
 sort.propagate(False)
 sort.propagate(False)
 #Filter Section
-flt = tk.Frame(main_box, bd=2, relief='solid', width=215, bg='lightblue')
+flt = tk.Frame(main_box, bd=2, relief='solid', width=215, bg='#DDDDDD')
 flt.propagate(False)
 
 #Sort Box (left)
-sort_box = tk.Frame(sort, bg='lightblue', bd=2, relief='solid')
+sort_box = tk.Frame(sort, bg='#DDDDDD', bd=2, relief='solid')
 sort_box.pack(padx=2, pady=2, side='top', fill='x')
 sort_frame = tk.StringVar(value='Name')
-tk.Radiobutton(sort_box, text='Name', variable=sort_frame, value='Name', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Year', variable=sort_frame, value='Year', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Director', variable=sort_frame, value='Director', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Rating', variable=sort_frame, value='Rating', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Genre', variable=sort_frame, value='Genre', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Rental Status', variable=sort_frame, value='Rental_Status', bg='lightblue').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Name', variable=sort_frame, value='Name', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Year', variable=sort_frame, value='Year', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Director', variable=sort_frame, value='Director', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Rating', variable=sort_frame, value='Rating', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Genre', variable=sort_frame, value='Genre', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Rental Status', variable=sort_frame, value='Rental_Status', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 
 #Filter Box (left)
 #Rental Status (Inside of Filter Box)
-tk.Label(flt, text='Rental Status', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
-rent_stat_box = tk.StringVar(value='year')
-tk.Radiobutton(flt, text='Available', variable=rent_stat_box, value='rent_stat_box', bg='lightblue').pack(anchor='w', padx=10)
+tk.Label(flt, text='Rental Status:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
+rental_stat_box = tk.Frame(flt, bg='#DDDDDD', bd=2, relief='solid')
+rental_stat_box.pack(padx=2, side='top', fill='x')
+
+available = tk.BooleanVar()
+
+tk.Checkbutton(rental_stat_box, text='Available', variable=available, bg='#DDDDDD').pack(anchor= 'w', padx=10)
 
 #Year Box (Inside of Filter Box)
-tk.Label(flt, text='Year:', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
-year_box = tk.Frame(flt, bg='lightblue', bd=2, relief='solid')
+tk.Label(flt, text='Year:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
+year_box = tk.Frame(flt, bg='#DDDDDD', bd=2, relief='solid')
 year_box.pack(padx=2, side='top', fill='x')
 
 year_2020 = tk.BooleanVar()
@@ -158,17 +162,17 @@ year_1980= tk.BooleanVar()
 year_1970 = tk.BooleanVar()
 year_1960 = tk.BooleanVar()
 
-tk.Checkbutton(year_box, text='2020+', variable=year_2020, bg='lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(year_box, text='2010-2019', variable=year_2010, bg= 'lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(year_box, text='2000-2009', variable=year_2000, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1990-1999', variable=year_1990, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1980-1989', variable=year_1980, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1970-1979', variable=year_1970, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='Up to 1960', variable=year_1960, bg= 'lightblue').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='2020+', variable=year_2020, bg='#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='2010-2019', variable=year_2010, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='2000-2009', variable=year_2000, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='1990-1999', variable=year_1990, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='1980-1989', variable=year_1980, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='1970-1979', variable=year_1970, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='Up to 1960', variable=year_1960, bg= '#DDDDDD').pack(anchor='w', padx=10)
 
 #Rating Box (Inside of Filter Box)
-tk.Label(flt, text='Rating:', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
-rating_box = tk.Frame(flt, bg='lightblue', bd=2, relief='solid')
+tk.Label(flt, text='Rating:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
+rating_box = tk.Frame(flt, bg='#DDDDDD', bd=2, relief='solid')
 rating_box.pack(padx=2, side='top', fill='x')
 
 G = tk.BooleanVar()
@@ -177,15 +181,15 @@ PG_13 = tk.BooleanVar()
 R = tk.BooleanVar()
 NC_17 = tk.BooleanVar()
 
-tk.Checkbutton(rating_box, text='G', variable=G, bg='lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(rating_box, text='PG', variable=PG, bg= 'lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(rating_box, text='PG-13', variable=PG_13, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(rating_box, text='R', variable=R, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(rating_box, text='NC-17', variable=NC_17, bg= 'lightblue').pack(anchor='w', padx=10)
+tk.Checkbutton(rating_box, text='G', variable=G, bg='#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(rating_box, text='PG', variable=PG, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(rating_box, text='PG-13', variable=PG_13, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(rating_box, text='R', variable=R, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(rating_box, text='NC-17', variable=NC_17, bg= '#DDDDDD').pack(anchor='w', padx=10)
 
 #Genre Box (Inside of Filter Box)
-tk.Label(flt, text='Genre', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
-genre_box = tk.Frame(flt, bg='lightblue', bd=2, relief='solid')
+tk.Label(flt, text='Genre', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
+genre_box = tk.Frame(flt, bg='#DDDDDD', bd=2, relief='solid')
 genre_box.pack(padx=2, side='top', fill='x')
 
 Action = tk.BooleanVar()
@@ -197,23 +201,23 @@ Romance = tk.BooleanVar()
 Science_Fiction = tk.BooleanVar()
 Thriller = tk.BooleanVar()
 
-tk.Checkbutton(genre_box, text='Action', variable=Action, bg='lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(genre_box, text='Adventure', variable=Adventure, bg= 'lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(genre_box, text='Comedy', variable=Comedy, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Drama', variable=Drama, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Horror', variable=Horror, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Romance', variable=Romance, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Science Fiction', variable=Science_Fiction, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Thriller', variable=Thriller, bg= 'lightblue').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Action', variable=Action, bg='#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Adventure', variable=Adventure, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Comedy', variable=Comedy, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Drama', variable=Drama, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Horror', variable=Horror, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Romance', variable=Romance, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Science Fiction', variable=Science_Fiction, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Thriller', variable=Thriller, bg= '#DDDDDD').pack(anchor='w', padx=10)
 
 
 
 #Table Display Section
-table_section = tk.Frame(main_box, bd=2, relief='solid', bg='grey')
+table_section = tk.Frame(main_box, bd=2, relief='solid', bg='#BFBFBF')
 table_section.pack(side='left', padx=0, fill='both', expand=True)
 
 #Button Row (Inside the table display)
-table_section_but = tk.Frame(table_section, bg='grey')
+table_section_but = tk.Frame(table_section, bg='#BFBFBF')
 table_section_but.pack(side='top', fill='x')
 
 # Add, edit and delete act on the selected database ID
@@ -443,26 +447,26 @@ cust_tabs.propagate(False)
 def cust_show_sort():
     cust_flt.pack_forget()
     cust_sort.pack(side='left', before=cust_table_section, padx=0, fill='y')
-    cust_sort_but.config(bg='blue')
-    cust_flt_but.config(bg='white')
-cust_sort_but = tk.Button(cust_tabs, text='Sort', width=14, bg='blue', command=cust_show_sort)
+    cust_sort_but.config(bg='#2C5AA0')
+    cust_flt_but.config(bg='#DDDDDD')
+cust_sort_but = tk.Button(cust_tabs, text='Sort', width=14, bg='#2C5AA0', command=cust_show_sort)
 cust_sort_but.pack(side='left', padx=0, fill='both')
 
 #Filter button
 def cust_show_flt():
     cust_sort.pack_forget()
     cust_flt.pack(side='left', before=cust_table_section, padx=0, fill='y')
-    cust_flt_but.config(bg='blue')
-    cust_sort_but.config(bg='white')
-cust_flt_but = tk.Button(cust_tabs, text='Filter', width=14, command=cust_show_flt)
+    cust_flt_but.config(bg='#2C5AA0')
+    cust_sort_but.config(bg='#DDDDDD')
+cust_flt_but = tk.Button(cust_tabs, text='Filter', width=14, bg='#DDDDDD', command=cust_show_flt)
 cust_flt_but.pack(side='left', padx=0, fill='both')
 
 #Invintory Button
-inv_but = tk.Button(cust_tabs, text='Inventory', command=inv_page)
+inv_but = tk.Button(cust_tabs, text='Inventory', bg='#DDDDDD', command=inv_page)
 inv_but.pack(side='left', padx=0, fill='both',expand=True)
 
 #Customer button
-cust_but = tk.Button(cust_tabs, text='Customer', bg='blue', command=cust_page)
+cust_but = tk.Button(cust_tabs, text='Customer', bg='#2C5AA0', command=cust_page)
 cust_but.pack(side='left', padx=0, fill='both', expand=True)
 
 
@@ -475,35 +479,35 @@ cust_main_box.propagate(False)
 
 #Sidebar (left)
 #Sort Section
-cust_sort = tk.Frame(cust_main_box, bd=2, relief='solid', width=215, bg='lightblue')
+cust_sort = tk.Frame(cust_main_box, bd=2, relief='solid', width=215, bg='#DDDDDD')
 cust_sort.pack(side='left', padx=0, fill='y')
 cust_sort.propagate(False)
 cust_sort.propagate(False)
 #Filter Section
-cust_flt = tk.Frame(cust_main_box, bd=2, relief='solid', width=215, bg='lightblue')
+cust_flt = tk.Frame(cust_main_box, bd=2, relief='solid', width=215, bg='#DDDDDD')
 cust_flt.propagate(False)
 
 #Sort Box (left)
-cust_sort_box = tk.Frame(cust_sort, bg='lightblue', bd=2, relief='solid')
+cust_sort_box = tk.Frame(cust_sort, bg='#DDDDDD', bd=2, relief='solid')
 cust_sort_box.pack(padx=2, pady=2, side='top', fill='x')
 cust_sort_frame = tk.StringVar(value='Name')
-tk.Radiobutton(cust_sort_box, text='First', variable=sort_frame, value='First', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(cust_sort_box, text='Last', variable=sort_frame, value='Last', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(cust_sort_box, text='Address', variable=sort_frame, value='Address', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(cust_sort_box, text='Phone', variable=sort_frame, value='Phone', bg='lightblue').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(cust_sort_box, text='Email', variable=sort_frame, value='Email', bg='lightblue').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(cust_sort_box, text='First', variable=sort_frame, value='First', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(cust_sort_box, text='Last', variable=sort_frame, value='Last', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(cust_sort_box, text='Address', variable=sort_frame, value='Address', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(cust_sort_box, text='Phone', variable=sort_frame, value='Phone', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(cust_sort_box, text='Email', variable=sort_frame, value='Email', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 
 
 #Filter Box (left)
 #Has A Rental (Inside of Filter Box)
-tk.Label(cust_flt, text='Rental:', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
+tk.Label(cust_flt, text='Rental:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
 renting_box = tk.StringVar(value='rent_check')
-tk.Radiobutton(cust_flt, text='Currently Renting', variable=renting_box, value='renting_box', bg='lightblue').pack(anchor='w', padx=10)
+tk.Radiobutton(cust_flt, text='Currently Renting', variable=renting_box, value='renting_box', bg='#DDDDDD').pack(anchor='w', padx=10)
 
 
 #Email Box (Inside of Filter Box)
-tk.Label(cust_flt, text='Email:', bg='lightblue').pack(anchor='w', padx=10, pady=(10, 0))
-cust_email_box = tk.Frame(cust_flt, bg='lightblue', bd=2, relief='solid')
+tk.Label(cust_flt, text='Email:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
+cust_email_box = tk.Frame(cust_flt, bg='#DDDDDD', bd=2, relief='solid')
 cust_email_box.pack(padx=2, side='top', fill='x')
 
 gmail = tk.BooleanVar()
@@ -512,20 +516,20 @@ yahoo = tk.BooleanVar()
 outlook = tk.BooleanVar()
 other = tk.BooleanVar()
 
-tk.Checkbutton(cust_email_box, text='Gmail', variable=gmail, bg='lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(cust_email_box, text='Icloud', variable=icloud, bg= 'lightblue').pack(anchor= 'w', padx=10)
-tk.Checkbutton(cust_email_box, text='Yahoo', variable=yahoo, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(cust_email_box, text='Outlook', variable=outlook, bg= 'lightblue').pack(anchor='w', padx=10)
-tk.Checkbutton(cust_email_box, text='Other', variable=other, bg= 'lightblue').pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Gmail', variable=gmail, bg='#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(cust_email_box, text='Icloud', variable=icloud, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
+tk.Checkbutton(cust_email_box, text='Yahoo', variable=yahoo, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Outlook', variable=outlook, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Other', variable=other, bg= '#DDDDDD').pack(anchor='w', padx=10)
 
 
 
 #Table Display Section
-cust_table_section = tk.Frame(cust_main_box, bd=2, relief='solid', bg='grey')
+cust_table_section = tk.Frame(cust_main_box, bd=2, relief='solid', bg='#BFBFBF')
 cust_table_section.pack(side='left', padx=0, fill='both', expand=True)
 
 #Button Row (Inside the table display)
-cust_table_section_but = tk.Frame(cust_table_section, bg='grey')
+cust_table_section_but = tk.Frame(cust_table_section, bg='#BFBFBF')
 cust_table_section_but.pack(side='top', fill='x')
 
 # Add, edit and delete customers by their database IDs
@@ -713,12 +717,12 @@ inventory_page.tkraise()
 
 
 #Return Page
-return_page_main = tk.Frame(return_page, bg='grey')
+return_page_main = tk.Frame(return_page, bg='#BFBFBF')
 return_page_main.pack(fill='both', expand=True)
 return_page_main.propagate(False)
 
 #Return top frame
-return_top = tk.Frame(return_page_main, height=50, bg='grey')
+return_top = tk.Frame(return_page_main, height=50, bg='#BFBFBF')
 return_top.pack(fill='x')
 return_page_main.propagate(False)
 
@@ -728,9 +732,9 @@ home_button.pack(fill='x', side='left', padx=5, pady=5)
 
 
 # Return active rentals using their rental ID
-return_controls = tk.Frame(return_page_main, bg='grey')
+return_controls = tk.Frame(return_page_main, bg='#BFBFBF')
 return_controls.pack(fill='x', padx=10, pady=8)
-tk.Label(return_controls, text='Active rentals', bg='grey', font=('Arial', 14, 'bold')).pack(side='left')
+tk.Label(return_controls, text='Active rentals', bg='#BFBFBF', font=('Arial', 14, 'bold')).pack(side='left')
 
 return_columns = ('Rental ID', 'Customer', 'Movie', 'Rented At')
 return_table = ttk.Treeview(return_page_main, columns=return_columns, show='headings', selectmode='browse')
