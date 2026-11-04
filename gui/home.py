@@ -61,7 +61,7 @@ name = tk.Label(header, text="Video Store")
 name.pack(side='left', padx=10)
 
 #Return button top right
-menu = tk.Button(header, text='Return', command=show_return_page)
+menu = tk.Button(header, text='Return Movie', command=show_return_page)
 menu.pack(side='right', padx=(1,10))
 
 #Customer History Button
@@ -73,8 +73,8 @@ Rent = tk.Button(header, text='Rent', command=show_rental_page)
 Rent.pack(side='right', padx=1)
 
 #Main search
-main_search = tk.Entry(header, width=70,)
-main_search.pack(expand=True)
+main_search = tk.Entry(header, width=30,)
+main_search.place(relx=.51, rely=.25)
 
 
 
@@ -392,7 +392,7 @@ cust_name = tk.Label(cust_header, text="Video Store")
 cust_name.pack(side='left', padx=10)
 
 #Return button top right
-cust_menu = tk.Button(cust_header, text='Return', command=show_return_page)
+cust_menu = tk.Button(cust_header, text='Return Movie', command=show_return_page)
 cust_menu.pack(side='right', padx=(1,10))
 
 #Customer History Button
@@ -404,8 +404,8 @@ Rent = tk.Button(cust_header, text='Rent', command=show_rental_page)
 Rent.pack(side='right', padx=1)
 
 #Main search
-cust_main_search = tk.Entry(cust_header, width=70,)
-cust_main_search.pack(expand=True)
+cust_main_search = tk.Entry(cust_header, width=30)
+cust_main_search.place(relx=.51, rely=.25)
 
 
 
