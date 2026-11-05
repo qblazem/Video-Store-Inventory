@@ -135,7 +135,7 @@ sort_frame = tk.StringVar(value='Name')
 tk.Radiobutton(sort_box, text='Name', variable=sort_frame, value='Name', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 tk.Radiobutton(sort_box, text='Year', variable=sort_frame, value='Year', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 tk.Radiobutton(sort_box, text='Director', variable=sort_frame, value='Director', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
-tk.Radiobutton(sort_box, text='Rating', variable=sort_frame, value='Rating', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
+tk.Radiobutton(sort_box, text='Age Rating', variable=sort_frame, value='Rating', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 tk.Radiobutton(sort_box, text='Genre', variable=sort_frame, value='Genre', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 tk.Radiobutton(sort_box, text='Rental Status', variable=sort_frame, value='Rental_Status', bg='#DDDDDD').pack(anchor='w', padx=10, pady=10)
 
@@ -248,9 +248,12 @@ def show_edit():
         return
     editing_video_id = video_id
     for field, key in zip(video_fields, video_field_keys):
-        field.delete(0, tk.END)
         value = video.get(key)
-        field.insert(0, '' if value is None else str(value))
+        if key == 'rating':
+            rating_entry.set('' if value is None else str(value))
+        else:
+            field.delete(0, tk.END)
+            field.insert(0, '' if value is None else str(value))
     add_submit.config(text='Update')
     entry_row.pack(fill='x', padx=5, pady=5)
 
@@ -285,7 +288,7 @@ delete_but.pack(side='right', padx=4, pady=4)
 #Frame of table
 table_frame = tk.Frame(table_section, bd=2, relief='solid')
 table_frame.pack(fill='both', expand=True, padx=5, pady=5)
-col=("Title", 'Year', 'Director', 'Rating', 'Genre', 'Total Quantity')
+col=("Title", 'Year', 'Director', 'Age Rating', 'Genre', 'Total Quantity')
 #Table (Inventory)
 table = ttk.Treeview(table_frame, columns=col, show='headings')
 for col in col:
@@ -335,7 +338,12 @@ def inventory_field(label, width=12):
 title_entry = inventory_field("Title")
 year_entry = inventory_field("Year", 6)
 director_entry = inventory_field("Director")
-rating_entry = inventory_field("Rating", 6)
+rating_frame = tk.Frame(entry_row)
+rating_frame.pack(side='left', padx=2, fill='x', expand=True)
+tk.Label(rating_frame, text='Age Rating', anchor='w').pack(fill='x')
+rating_entry = ttk.Combobox(rating_frame, values=('G', 'PG', 'PG-13', 'R', 'NC-17'),
+                            state='readonly', width=7)
+rating_entry.pack(fill='x')
 genre_entry = inventory_field("Genre")
 quantity_entry = inventory_field("Quantity", 6)
 video_fields = (title_entry, year_entry, director_entry, rating_entry, genre_entry, quantity_entry)
@@ -343,7 +351,10 @@ video_field_keys = ('title', 'year', 'director', 'rating', 'genre', 'total_quant
 
 def clear_video_fields():
     for field in video_fields:
-        field.delete(0, tk.END)
+        if field is rating_entry:
+            rating_entry.set('')
+        else:
+            field.delete(0, tk.END)
     quantity_entry.insert(0, '0')
 
 def cancel_video_edit():

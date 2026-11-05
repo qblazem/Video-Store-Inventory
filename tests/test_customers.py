@@ -72,46 +72,48 @@ class TestCustomers(unittest.TestCase):
 
     def test_get_all_customers(self):
         """Return all customer records provided by the database."""
-        self.query.execute.return_value.data = [self.customer]
+        self.query.order.return_value.execute.return_value.data = [self.customer]
 
         result = customers.get_all_customers()
 
         self.assertEqual(result, [self.customer])
         self.db.table.assert_called_once_with("Customers")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("customer_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_get_all_customers_when_empty(self):
         """Return an empty list when no customers exist."""
-        self.query.execute.return_value.data = []
+        self.query.order.return_value.execute.return_value.data = []
 
         result = customers.get_all_customers()
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Customers")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("customer_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_search_customers_with_match(self):
         """Search for a partial first-name match."""
-        search = self.query.ilike.return_value
+        search = self.query.or_.return_value
         search.execute.return_value.data = [self.customer]
 
         result = customers.search_customers("Sam")
 
         self.assertEqual(result, [self.customer])
         self.db.table.assert_called_once_with("Customers")
-        self.query.ilike.assert_called_once_with("first_name", "%Sam%")
+        self.query.or_.assert_called_once_with("first_name.ilike.%Sam%,last_name.ilike.%Sam%")
         search.execute.assert_called_once()
 
     def test_search_customers_without_match(self):
         """Return an empty list when the search finds nothing."""
-        search = self.query.ilike.return_value
+        search = self.query.or_.return_value
         search.execute.return_value.data = []
 
         result = customers.search_customers("Nobody")
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Customers")
-        self.query.ilike.assert_called_once_with("first_name", "%Nobody%")
+        self.query.or_.assert_called_once_with("first_name.ilike.%Nobody%,last_name.ilike.%Nobody%")
         search.execute.assert_called_once()
 
     def test_update_customer(self):
