@@ -1,6 +1,4 @@
 
-import math
-
 from database.database import supabase
 
 
@@ -29,14 +27,11 @@ def _validate_video_fields(fields: dict) -> dict:
 
     if "rating" in fields:
         rating = fields["rating"]
-        if rating is None or isinstance(rating, bool) or str(rating).strip() == "":
-            raise ValueError("Rating is required")
-        try:
-            rating = float(rating)
-        except (ValueError, TypeError):
-            raise ValueError("Rating must be a number")
-        if not math.isfinite(rating) or not 0 <= rating <= 10:
-            raise ValueError("Rating must be between 0 and 10")
+        if not isinstance(rating, str):
+            raise ValueError("Age rating must be G, PG, PG-13, R, or NC-17")
+        rating = rating.strip().upper().replace("PG13", "PG-13").replace("NC17", "NC-17")
+        if rating not in {"G", "PG", "PG-13", "R", "NC-17"}:
+            raise ValueError("Age rating must be G, PG, PG-13, R, or NC-17")
         fields["rating"] = rating
 
     if "total_quantity" in fields:
@@ -69,7 +64,7 @@ def create_video(
     title: str,
     year: int | str | None = None,
     director: str | None = None,
-    rating: float | None = None,
+    rating: str | None = None,
     genre: str | None = None,
     total_quantity: int = 0
 ) -> dict:

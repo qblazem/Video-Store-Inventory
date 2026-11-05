@@ -126,7 +126,7 @@ class CustomerHistoryFrame(tk.Frame):
             ("title", "Name", 180),
             ("year", "Year", 65),
             ("director", "Director", 140),
-            ("rating", "Rating", 70),
+            ("rating", "Age Rating", 85),
             ("genre", "Genre", 100),
             ("video_id", "Movie ID", 85),
         )

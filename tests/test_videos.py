@@ -15,9 +15,9 @@ class TestVideos(unittest.TestCase):
         self.video = {
             "video_id": 1,
             "title": "Midnight Chase",
-            "year": "2020",
+            "year": 2020,
             "director": "Alex Reed",
-            "rating": 7.5,
+            "rating": "PG-13",
             "genre": "Action",
             "total_quantity": 3
         }
@@ -48,6 +48,21 @@ class TestVideos(unittest.TestCase):
 
         self.db.table.assert_not_called()
 
+    def test_create_video_accepts_age_rating(self):
+        """Normalize a PG13 age rating before saving"""
+        details = self.video.copy()
+        del details["video_id"]
+        details["rating"] = "pg13"
+        self.table.insert.return_value.execute.return_value.data = [self.video]
+        videos.create_video(**details)
+        self.assertEqual(self.table.insert.call_args.args[0]["rating"], "PG-13")
+
+    def test_create_video_rejects_numeric_rating(self):
+        """Reject the old numerical movie rating"""
+        with self.assertRaisesRegex(ValueError, "Age rating"):
+            videos.create_video("Test", 2024, "Director", 7.5, "Action", 2)
+        self.db.table.assert_not_called()
+
     def test_get_existing_video(self):
         """Find a video by its ID."""
         self.filtered.execute.return_value.data = [self.video]
@@ -72,46 +87,48 @@ class TestVideos(unittest.TestCase):
 
     def test_get_all_videos(self):
         """Return the video records provided by the database."""
-        self.query.execute.return_value.data = [self.video]
+        self.query.order.return_value.execute.return_value.data = [self.video]
 
         result = videos.get_all_videos()
 
         self.assertEqual(result, [self.video])
         self.db.table.assert_called_once_with("Videos")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("video_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_get_all_videos_when_empty(self):
         """Return an empty list when there are no videos."""
-        self.query.execute.return_value.data = []
+        self.query.order.return_value.execute.return_value.data = []
 
         result = videos.get_all_videos()
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Videos")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("video_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_search_video_with_match(self):
         """Search for a partial title match."""
-        search = self.query.ilike.return_value
+        search = self.query.or_.return_value
         search.execute.return_value.data = [self.video]
 
         result = videos.search_video("Midnight")
 
         self.assertEqual(result, [self.video])
         self.db.table.assert_called_once_with("Videos")
-        self.query.ilike.assert_called_once_with("title", "%Midnight%")
+        self.query.or_.assert_called_once_with("title.ilike.%Midnight%,director.ilike.%Midnight%,genre.ilike.%Midnight%")
         search.execute.assert_called_once()
 
     def test_search_video_without_match(self):
         """Return an empty list when the search finds nothing."""
-        search = self.query.ilike.return_value
+        search = self.query.or_.return_value
         search.execute.return_value.data = []
 
         result = videos.search_video("Unknown")
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Videos")
-        self.query.ilike.assert_called_once_with("title", "%Unknown%")
+        self.query.or_.assert_called_once_with("title.ilike.%Unknown%,director.ilike.%Unknown%,genre.ilike.%Unknown%")
         search.execute.assert_called_once()
 
     def test_update_video(self):

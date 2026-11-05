@@ -66,28 +66,30 @@ class TestRentals(unittest.TestCase):
         returned["currently_rented"] = False
 
         records = [self.rental, returned]
-        self.query.execute.return_value.data = records
+        self.query.order.return_value.execute.return_value.data = records
 
         result = rentals.get_all_rentals()
 
         self.assertEqual(result, records)
         self.db.table.assert_called_once_with("Rentals")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("rental_id")
+        self.query.order.return_value.execute.assert_called_once()
         self.query.eq.assert_not_called()
 
     def test_get_all_rentals_when_empty(self):
         """Return an empty list when there are no rentals."""
-        self.query.execute.return_value.data = []
+        self.query.order.return_value.execute.return_value.data = []
 
         result = rentals.get_all_rentals()
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Rentals")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("rental_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_get_all_rentals_database_error(self):
         """Do not treat a database error as an empty rental list."""
-        self.query.execute.side_effect = RuntimeError(
+        self.query.order.return_value.execute.side_effect = RuntimeError(
             "Database unavailable"
         )
 
@@ -95,7 +97,8 @@ class TestRentals(unittest.TestCase):
             rentals.get_all_rentals()
 
         self.db.table.assert_called_once_with("Rentals")
-        self.query.execute.assert_called_once()
+        self.query.order.assert_called_once_with("rental_id")
+        self.query.order.return_value.execute.assert_called_once()
 
     def test_get_customer_rentals(self):
         """Return a customer's active and past rentals."""
@@ -104,47 +107,51 @@ class TestRentals(unittest.TestCase):
         returned["currently_rented"] = False
 
         records = [self.rental, returned]
-        self.filtered.execute.return_value.data = records
+        self.filtered.order.return_value.execute.return_value.data = records
 
         result = rentals.get_customer_rentals(2)
 
         self.assertEqual(result, records)
         self.db.table.assert_called_once_with("Rentals")
         self.query.eq.assert_called_once_with("customer_id", 2)
-        self.filtered.execute.assert_called_once()
+        self.filtered.order.assert_called_once_with("rented_at", desc=True)
+        self.filtered.order.return_value.execute.assert_called_once()
 
     def test_get_customer_rentals_when_empty(self):
         """Return an empty list for a customer with no rentals."""
-        self.filtered.execute.return_value.data = []
+        self.filtered.order.return_value.execute.return_value.data = []
 
         result = rentals.get_customer_rentals(99)
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Rentals")
         self.query.eq.assert_called_once_with("customer_id", 99)
-        self.filtered.execute.assert_called_once()
+        self.filtered.order.assert_called_once_with("rented_at", desc=True)
+        self.filtered.order.return_value.execute.assert_called_once()
 
     def test_get_active_rentals(self):
         """Request only rentals marked as currently rented."""
-        self.filtered.execute.return_value.data = [self.rental]
+        self.filtered.order.return_value.execute.return_value.data = [self.rental]
 
         result = rentals.get_active_rentals()
 
         self.assertEqual(result, [self.rental])
         self.db.table.assert_called_once_with("Rentals")
         self.query.eq.assert_called_once_with("currently_rented", True)
-        self.filtered.execute.assert_called_once()
+        self.filtered.order.assert_called_once_with("rented_at", desc=True)
+        self.filtered.order.return_value.execute.assert_called_once()
 
     def test_get_active_rentals_when_empty(self):
         """Return an empty list when no rentals are active."""
-        self.filtered.execute.return_value.data = []
+        self.filtered.order.return_value.execute.return_value.data = []
 
         result = rentals.get_active_rentals()
 
         self.assertEqual(result, [])
         self.db.table.assert_called_once_with("Rentals")
         self.query.eq.assert_called_once_with("currently_rented", True)
-        self.filtered.execute.assert_called_once()
+        self.filtered.order.assert_called_once_with("rented_at", desc=True)
+        self.filtered.order.return_value.execute.assert_called_once()
 
 
 if __name__ == "__main__":
