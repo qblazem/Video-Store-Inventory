@@ -176,12 +176,12 @@ year_1970 = tk.BooleanVar()
 year_1960 = tk.BooleanVar()
 
 tk.Checkbutton(year_box, text='2020+', variable=year_2020, bg='#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
-tk.Checkbutton(year_box, text='2010-2019', variable=year_2010, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
-tk.Checkbutton(year_box, text='2000-2009', variable=year_2000, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1990-1999', variable=year_1990, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1980-1989', variable=year_1980, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='1970-1979', variable=year_1970, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(year_box, text='Before 1970', variable=year_1960, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(year_box, text='2010-2019', variable=year_2010, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='2000-2009', variable=year_2000, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='1990-1999', variable=year_1990, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='1980-1989', variable=year_1980, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='1970-1979', variable=year_1970, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(year_box, text='Before 1970', variable=year_1960, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
 
 #Rating Box (Inside of Filter Box)
 tk.Label(flt, text='Rating:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
@@ -195,10 +195,10 @@ R = tk.BooleanVar()
 NC_17 = tk.BooleanVar()
 
 tk.Checkbutton(rating_box, text='G', variable=G, bg='#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
-tk.Checkbutton(rating_box, text='PG', variable=PG, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
-tk.Checkbutton(rating_box, text='PG-13', variable=PG_13, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(rating_box, text='R', variable=R, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(rating_box, text='NC-17', variable=NC_17, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(rating_box, text='PG', variable=PG, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(rating_box, text='PG-13', variable=PG_13, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(rating_box, text='R', variable=R, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(rating_box, text='NC-17', variable=NC_17, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
 
 #Genre Box (Inside of Filter Box)
 tk.Label(flt, text='Genre', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
@@ -215,13 +215,13 @@ Science_Fiction = tk.BooleanVar()
 Thriller = tk.BooleanVar()
 
 tk.Checkbutton(genre_box, text='Action', variable=Action, bg='#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
-tk.Checkbutton(genre_box, text='Adventure', variable=Adventure, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
-tk.Checkbutton(genre_box, text='Comedy', variable=Comedy, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Drama', variable=Drama, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Horror', variable=Horror, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Romance', variable=Romance, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Science Fiction', variable=Science_Fiction, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(genre_box, text='Thriller', variable=Thriller, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(genre_box, text='Adventure', variable=Adventure, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Comedy', variable=Comedy, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Drama', variable=Drama, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Horror', variable=Horror, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Romance', variable=Romance, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Science Fiction', variable=Science_Fiction, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(genre_box, text='Thriller', variable=Thriller, bg= '#DDDDDD', command=lambda: refresh_inventory()).pack(anchor= 'w', padx=10)
 
 
 
@@ -555,7 +555,13 @@ tk.Radiobutton(cust_sort_box, text='Email', variable=cust_sort_frame, value='Ema
 #Has A Rental (Inside of Filter Box)
 tk.Label(cust_flt, text='Rental:', bg='#DDDDDD').pack(anchor='w', padx=10, pady=(10, 0))
 renting_box = tk.BooleanVar(value=False)
-tk.Radiobutton(cust_flt, text='Currently Renting', variable=renting_box, bg='#DDDDDD', command=lambda: refresh_customers()).pack(anchor='w', padx=10)
+tk.Checkbutton(
+    cust_flt,
+    text='Currently Renting',
+    variable=renting_box,
+    bg='#DDDDDD',
+    command=lambda: refresh_customers(),
+).pack(anchor='w', padx=10)
 
 
 #Email Box (Inside of Filter Box)
@@ -570,10 +576,10 @@ outlook = tk.BooleanVar()
 other = tk.BooleanVar()
 
 tk.Checkbutton(cust_email_box, text='Gmail', variable=gmail, bg='#DDDDDD', command=lambda: refresh_customers()).pack(anchor= 'w', padx=10)
-tk.Checkbutton(cust_email_box, text='Icloud', variable=icloud, bg= '#DDDDDD').pack(anchor= 'w', padx=10)
-tk.Checkbutton(cust_email_box, text='Yahoo', variable=yahoo, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(cust_email_box, text='Outlook', variable=outlook, bg= '#DDDDDD').pack(anchor='w', padx=10)
-tk.Checkbutton(cust_email_box, text='Other', variable=other, bg= '#DDDDDD').pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Icloud', variable=icloud, bg= '#DDDDDD', command=lambda: refresh_customers()).pack(anchor= 'w', padx=10)
+tk.Checkbutton(cust_email_box, text='Yahoo', variable=yahoo, bg= '#DDDDDD', command=lambda: refresh_customers()).pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Outlook', variable=outlook, bg= '#DDDDDD', command=lambda: refresh_customers()).pack(anchor='w', padx=10)
+tk.Checkbutton(cust_email_box, text='Other', variable=other, bg= '#DDDDDD', command=lambda: refresh_customers()).pack(anchor='w', padx=10)
 
 
 
